@@ -9,9 +9,10 @@ import re
 import requests
 import time
 
-from threading import Timer
+from buildapi_client import query_jobs_schedule
 from collections import defaultdict
 from thclient import TreeherderClient
+from threading import Timer
 
 
 class TreeWatcher(object):
@@ -318,23 +319,18 @@ class TreeWatcher(object):
     def _get_ids_for_rev(self, branch, rev, builder):
             # Get the request or build id associated with the given branch/rev/builder,
             # if any.
-            root_url = 'https://secure.pub.build.mozilla.org/buildapi/self-serve'
-
-            # First find the build_id for the job to rebuild
-            build_info_url = '%s/%s/rev/%s?format=json' % (root_url, branch, rev)
-            info_req = requests.get(build_info_url,
-                                    headers={'Accept': 'application/json'},
-                                    auth=self.auth)
             found_buildid = None
             found_requestid = None
             builder_total, rev_total = 0, 0
-
+            # First find the build_id for the job to rebuild
             try:
-                results = info_req.json()
+                results = query_jobs_schedule(branch, rev, auth=self.auth)
             except ValueError:
                 self.log.error('Received an unexpected ValueError when retrieving '
                                'information about %s from buildapi.' % rev)
-                self.log.error('Request status: %d' % info_req.status_code)
+                if results == []:
+                            self.log.error('Request status not in 200.')
+
                 return None
 
             for res in results:
