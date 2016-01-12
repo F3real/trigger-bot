@@ -15,7 +15,7 @@ setup(
       },
       install_requires=[
            'mozillapulse',
-           'treeherder-client>=1.5',
+           'treeherder-client>=2.0.1',
            'requests>=2.5.1',
            'buildapi-client>=0.1'
       ],
