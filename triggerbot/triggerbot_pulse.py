@@ -10,7 +10,6 @@ import re
 import sys
 
 from mozillapulse import consumers
-
 from .tree_watcher import TreeWatcher
 
 logger = None
