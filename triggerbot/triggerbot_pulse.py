@@ -95,16 +95,6 @@ def read_ldap_auth():
         return conf['ldap_user'], conf['ldap_pw']
 
 
-def get_users():
-    global triggerbot_users
-    if os.environ.get('TB_USERS'):
-        triggerbot_users = os.environ['TB_USERS'].split()
-        return
-    with open(CONF_PATH) as f:
-        conf = json.load(f)
-        triggerbot_users = conf['triggerbot_users']
-
-
 def setup_logging(name, log_dir, log_stderr):
     logger = logging.getLogger(name)
     logger.setLevel(logging.DEBUG)
@@ -147,7 +137,6 @@ def run():
     ldap_auth = read_ldap_auth()
 
     user, pw = read_pulse_auth()
-    get_users()
 
     tw = TreeWatcher(ldap_auth)
 
