@@ -15,8 +15,8 @@ setup(
       },
       install_requires=[
            'mozillapulse',
-           'mozci>=0.25.5',
-           'treeherder-client>=2.0.1'
+           'mozci==0.26.0',
+           'treeherder-client==2.0.1'
       ],
       description='A pulse service for triggering builds with mozci.',
       classifiers=['Intended Audience :: Developers',

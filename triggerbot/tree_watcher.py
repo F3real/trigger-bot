@@ -11,11 +11,13 @@ import time
 from threading import Timer
 from collections import defaultdict
 
+from mozci.ci_manager import BuildAPIManager
 from mozci.query_jobs import BuildApi
 from thclient import TreeherderClient
 
 
 QUERY_SOURCE = BuildApi()
+QUERY_MANAGER = BuildAPIManager()
 
 
 class TreeWatcher(object):
@@ -285,17 +287,15 @@ class TreeWatcher(object):
         self.log.info('attempt_triggers, attempt %d' % attempt)
 
         if found_buildid:
-            QUERY_SOURCE.retrigger_build(uuid=found_buildid,
-                                         auth=self.auth,
-                                         repo_name=repo_name,
-                                         count=count,
-                                         dry_run=False)
+            QUERY_MANAGER.retrigger_build(uuid=found_buildid,
+                                          repo_name=repo_name,
+                                          count=count,
+                                          dry_run=False)
         elif found_requestid:
-            QUERY_SOURCE.retrigger(uuid=found_requestid,
-                                   auth=self.auth,
-                                   repo_name=repo_name,
-                                   count=count,
-                                   dry_run=False)
+            QUERY_MANAGER.retrigger(uuid=found_requestid,
+                                    repo_name=repo_name,
+                                    count=count,
+                                    dry_run=False)
         else:
             # For a short time after a job starts it seems there might not be
             # any info associated with this job/builder in.
@@ -330,8 +330,11 @@ class TreeWatcher(object):
         except ValueError:
             self.log.error('Received an unexpected ValueError when retrieving '
                            'information about %s from buildapi.' % rev)
-            if results == []:
-                self.log.error('Request status not in 200.')
+            return None
+
+        if results == []:
+            self.log.error('Tried to retrive information about %s from buildapi. '
+                           'Request status not in 200.' % rev)
 
             return None
 
