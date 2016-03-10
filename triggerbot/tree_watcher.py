@@ -7,8 +7,10 @@ import argparse
 import logging
 import re
 import time
+import json
 
 from threading import Timer
+from buildapi_client import query_jobs_schedule
 from collections import defaultdict
 
 from mozci.ci_manager import BuildAPIManager
@@ -290,19 +292,20 @@ class TreeWatcher(object):
             QUERY_MANAGER.retrigger_build(uuid=found_buildid,
                                           repo_name=repo_name,
                                           count=count,
-                                          dry_run=False)
+                                          dry_run=True)
         elif found_requestid:
             QUERY_MANAGER.retrigger(uuid=found_requestid,
                                     repo_name=repo_name,
                                     count=count,
-                                    dry_run=False)
+                                    dry_run=True)
         else:
             # For a short time after a job starts it seems there might not be
             # any info associated with this job/builder in.
             self.log.warning('Could not trigger "%s" at %s because there were '
                              'no builds found with that buildername to rebuild.' %
                              (builder, rev))
-
+            print repo_name
+            print rev
             if attempt > 4:
                 self.log.warning('Already tried to find something to rebuild '
                                  'for "%s" at %s, giving up' % (builder, rev))
@@ -327,6 +330,7 @@ class TreeWatcher(object):
         # First find the build_id for the job to rebuild
         try:
             results = QUERY_SOURCE.get_all_jobs(repo_name, rev)
+            results1 = query_jobs_schedule(repo_name, rev, self.auth)
         except ValueError:
             self.log.error('Received an unexpected ValueError when retrieving '
                            'information about %s from buildapi.' % rev)
@@ -343,5 +347,11 @@ class TreeWatcher(object):
                     found_buildid = res['build_id']
                 if 'request_id' in res and not found_requestid:
                     found_requestid = res['request_id']
-
+        if not found_buildid and not found_requestid:
+            print "Failure"
+            print results1 == results
+            with open('data1' + builder + '.txt', 'w') as outfile:
+                json.dump(results, outfile)
+            with open('data2' + builder + '.txt', 'w') as outfile:
+                json.dump(results1, outfile)
         return found_buildid, found_requestid, builder_total, rev_total
