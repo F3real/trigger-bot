@@ -326,7 +326,7 @@ class TreeWatcher(object):
         builder_total, rev_total = 0, 0
         # First find the build_id for the job to rebuild
         try:
-            results = QUERY_SOURCE.get_all_jobs(repo_name, rev)
+            results = QUERY_SOURCE.get_all_jobs(repo_name, rev, use_cache=False)
         except ValueError:
             self.log.error('Received an unexpected ValueError when retrieving '
                            'information about %s from buildapi.' % rev)
